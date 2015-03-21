@@ -45,7 +45,6 @@ import javax.ws.rs.core.Response;
 @Path("/Product")
 public class ProductSampleServlet {
 
-    
     @GET
     @Produces("application/json")
     public String doGet() {
@@ -60,12 +59,8 @@ public class ProductSampleServlet {
         String str = getResults("SELECT * FROM product where productID = ?", id);
         return str;
     }
-    
-    
+
     //private String strg;
-
-
-
     private String getResults(String query, String... params) {
         StringBuilder sb = new StringBuilder();
         String theString = "";
@@ -92,14 +87,13 @@ public class ProductSampleServlet {
         } catch (SQLException ex) {
             Logger.getLogger(ProductSampleServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         if (params.length == 0) {
             theString = productArray.build().toString();
         }
-            
+
         return theString;
     }
-
 
 //    private int doUpdate(String query, String... params) {
 //        int numChanges = 0;
@@ -113,12 +107,11 @@ public class ProductSampleServlet {
 //            Logger.getLogger(ProductSampleServlet.class.getName()).log(Level.SEVERE, null, ex);
 //        }
 //        return numChanges;
-  //  }
-  //  private final ExecutorService executorService = java.util.concurrent.Executors.newCachedThreadPool();
-
+    //  }
+    //  private final ExecutorService executorService = java.util.concurrent.Executors.newCachedThreadPool();
     @POST
     @Consumes("application/json")
-    
+
     private void doPost(String strg) {
         JsonParser parser = Json.createParser(new StringReader(strg));
         Map<String, String> map = new HashMap<>();
@@ -146,8 +139,8 @@ public class ProductSampleServlet {
         String quantity = map.get("quantity");
         doUpdate("insert into product ( name, description, quantity) values ( ?, ?, ?)", str1, description, quantity);
     }
-    
-     private int doUpdate(String query, String... params) {
+
+    private int doUpdate(String query, String... params) {
         int numChanges = 0;
         try (Connection conn = Credentials.getConnection()) {
             PreparedStatement pstmt = conn.prepareStatement(query);
@@ -161,14 +154,11 @@ public class ProductSampleServlet {
         return numChanges;
     }
 
-     @DELETE
+    @DELETE
     @Path("{id}")
     public void doDelete(@PathParam("id") String id, String strg) {
         doUpdate("delete from product where productId = ?", id);
     }
-
-
-
 
     @PUT
     @Path("{id}")
@@ -201,7 +191,6 @@ public class ProductSampleServlet {
         doUpdate("update product set productId = ?, name = ?, description = ?, quantity = ? where productID = ?", id, str1, description, quantity, id);
 
     }
-
 
     private static class productArray {
 

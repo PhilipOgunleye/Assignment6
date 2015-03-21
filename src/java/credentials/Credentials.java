@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package credentials;
 
 import java.sql.Connection;
@@ -17,6 +16,7 @@ import java.util.logging.Logger;
  * @author c0641048
  */
 public class Credentials {
+
     public static Connection getConnection() {
         Connection conn = null;
         try {
@@ -30,5 +30,5 @@ public class Credentials {
         }
         return conn;
     }
-    
+
 }
