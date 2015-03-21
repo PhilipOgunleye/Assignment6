@@ -5,12 +5,8 @@
  */
 package servlets;
 
-import static com.sun.corba.se.spi.presentation.rmi.StubAdapter.request;
 import credentials.Credentials;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringReader;
-import static java.nio.file.Files.delete;
 import java.sql.*;
 import java.sql.Connection;
 import java.util.HashMap;
@@ -46,10 +42,27 @@ import javax.ws.rs.core.Response;
  *
  * @author c0641048
  */
-@WebServlet("/Product")
-public class ProductSampleServlet extends HttpServlet {
+@Path("/Product")
+public class ProductSampleServlet {
 
-    private String strg;
+    
+    @GET
+    @Produces("application/json")
+    public String doGet() {
+        String str = getResults("SELECT * FROM product");
+        return str;
+    }
+
+    @GET
+    @Path("{id}")
+    @Produces("application/json")
+    public String doGet(@PathParam("id") String id) {
+        String str = getResults("SELECT * FROM product where productID = ?", id);
+        return str;
+    }
+    
+    
+    //private String strg;
 
 
 
@@ -70,42 +83,43 @@ public class ProductSampleServlet extends HttpServlet {
                 map.put("description", rs.getString("description"));
                 map.put("quantity", rs.getInt("quantity"));
 
-                list.add(map);
+                //list.add(map);
+                theString = jsonob.build().toString();
+                Object build = productArray.build();
 
             }
-            theString = JSONValue.toJSONString(list);
+            //theString = JSONValue.toJSONString(list);
         } catch (SQLException ex) {
             Logger.getLogger(ProductSampleServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return theString.replace("},", "},\n");
-    }
-
-
-    private int doUpdate(String query, String... params) {
-        int numChanges = 0;
-        try (Connection conn = Credentials.getConnection()) {
-            PreparedStatement pstmt = conn.prepareStatement(query);
-            for (int i = 1; i <= params.length; i++) {
-                pstmt.setString(i, params[i - 1]);
-            }
-            numChanges = pstmt.executeUpdate();
-        } catch (SQLException ex) {
-            Logger.getLogger(ProductSampleServlet.class.getName()).log(Level.SEVERE, null, ex);
+        
+        if (params.length == 0) {
+            theString = productArray.build().toString();
         }
-        return numChanges;
+            
+        return theString;
     }
-    private final ExecutorService executorService = java.util.concurrent.Executors.newCachedThreadPool();
+
+
+//    private int doUpdate(String query, String... params) {
+//        int numChanges = 0;
+//        try (Connection conn = Credentials.getConnection()) {
+//            PreparedStatement pstmt = conn.prepareStatement(query);
+//            for (int i = 1; i <= params.length; i++) {
+//                pstmt.setString(i, params[i - 1]);
+//            }
+//            numChanges = pstmt.executeUpdate();
+//        } catch (SQLException ex) {
+//            Logger.getLogger(ProductSampleServlet.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return numChanges;
+  //  }
+  //  private final ExecutorService executorService = java.util.concurrent.Executors.newCachedThreadPool();
 
     @POST
-    @Consumes(value = "application/json")
-    public void doPost(@Suspended final AsyncResponse asyncResponse, final String str) {
-        executorService.submit(() -> {
-            doDoPost(str);
-            asyncResponse.resume(javax.ws.rs.core.Response.ok().build());
-        });
-    }
-
-    private void doDoPost(String strg) {
+    @Consumes("application/json")
+    
+    private void doPost(String strg) {
         JsonParser parser = Json.createParser(new StringReader(strg));
         Map<String, String> map = new HashMap<>();
         String name = "", value;
@@ -132,67 +146,35 @@ public class ProductSampleServlet extends HttpServlet {
         String quantity = map.get("quantity");
         doUpdate("insert into product ( name, description, quantity) values ( ?, ?, ?)", str1, description, quantity);
     }
-
-    @DELETE
-    @Path("{id}")
-    public void doDelete(@Suspended
-            final AsyncResponse asyncResponse, @PathParam(value = "id")
-            final String id, final String strg) {
-        executorService.submit(() -> {
-            doDoDelete(id, strg);
-            asyncResponse.resume(javax.ws.rs.core.Response.ok().build());
-        });
+    
+     private int doUpdate(String query, String... params) {
+        int numChanges = 0;
+        try (Connection conn = Credentials.getConnection()) {
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            for (int i = 1; i <= params.length; i++) {
+                pstmt.setString(i, params[i - 1]);
+            }
+            numChanges = pstmt.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductSampleServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return numChanges;
     }
 
-    private void doDoDelete(@PathParam("id") String id, String strg) {
+     @DELETE
+    @Path("{id}")
+    public void doDelete(@PathParam("id") String id, String strg) {
         doUpdate("delete from product where productId = ?", id);
     }
 
-    /**
-     *
-     * @param asyncResponse
-     * @param id
-     */
-    @GET
-    @Path(value = "{id}")
-    @Produces(value = "application/json")
-    public void doGeta(@Suspended final AsyncResponse asyncResponse, @PathParam(value = "id") final String id) {
-        executorService.submit(() -> {
-            asyncResponse.resume(doDoGet(id));
-        });
-    }
 
-    private String doDoGet(@PathParam("id") String id) {
-        String strg = getResults("SELECT * FROM product where productID = ?", id);
-        return strg;
-    }
 
-    @GET
-    @Produces(value = "application/json")
-    public void doGet(@Suspended final AsyncResponse asyncResponse) {
-        executorService.submit(() -> {
-            asyncResponse.resume(doDoGeta());
-        });
-    }
-
-    private String doDoGeta() {
-        String strg = getResults("SELECT * FROM product");
-        return strg;
-    }
 
     @PUT
-    @Path(value = "{id}")
-    @Consumes(value = "application/json")
-    public void doPut(@Suspended final AsyncResponse asyncResponse, @PathParam(value = "id") final String id, final String strg) {
-        executorService.submit(() -> {
-            doDoPut(id, strg);
-            asyncResponse.resume(javax.ws.rs.core.Response.ok().build());
-        });
-    }
-
-    private void doDoPut(@PathParam("id") String id, String strg) {
-        JsonParser parser;
-        parser = Json.createParser(new StringReader(strg));
+    @Path("{id}")
+    @Consumes("application/json")
+    public void doPut(@PathParam("id") String id, String strg) {
+        JsonParser parser = Json.createParser(new StringReader(strg));
         Map<String, String> map = new HashMap<>();
         String name = "", value;
         while (parser.hasNext()) {
@@ -205,12 +187,35 @@ public class ProductSampleServlet extends HttpServlet {
                     value = parser.getString();
                     map.put(name, value);
                     break;
+                case VALUE_NUMBER:
+                    value = Integer.toString(parser.getInt());
+                    map.put(name, value);
+                    break;
             }
         }
         System.out.println(map);
+
         String str1 = map.get("name");
         String description = map.get("description");
         String quantity = map.get("quantity");
         doUpdate("update product set productId = ?, name = ?, description = ?, quantity = ? where productID = ?", id, str1, description, quantity, id);
+
+    }
+
+
+    private static class productArray {
+
+        private static Object build() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        public productArray() {
+        }
+    }
+
+    private static class executorService {
+
+        public executorService() {
+        }
     }
 }

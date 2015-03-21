@@ -24,7 +24,7 @@ public class Credentials {
             String jdbc = "jdbc:mysql://localhost/Production1";
             String user = "root";
             String pass = "";
-            conn = DriverManager.getConnection(jdbc, user, pass);
+            conn = (Connection) DriverManager.getConnection(jdbc, user, pass);
         } catch (ClassNotFoundException | SQLException ex) {
             Logger.getLogger(Credentials.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -6,15 +6,13 @@
 
 package servlets;
 
-import java.io.PrintWriter;
-
 /**
  *
  * @author c0641048
  */
-class response {
+class jsonob {
 
-    static PrintWriter getWriter() {
+    static Object build() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
