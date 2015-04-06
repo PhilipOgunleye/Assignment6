@@ -28,7 +28,7 @@ public class ApplicationConfig {
      * out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(servlets.ProductSampleServlet.class);
+        resources.add(servlets.ProductRest.class);
     }
 
 }
